@@ -1,0 +1,174 @@
+#include <iostream>
+#include <stdlib.h>
+#include <fstream>
+#include <cctype>
+#include <regex>
+#include <string>
+#include <vector>
+
+using namespace std;
+int const NUM_MSG = 7;
+enum {
+   LISTENING, //Listening on port: 
+   INVALID_PORT, //Invalid port
+   INCORRECT_FLAG, //Non-valid Flag
+   ARG_START, //First argument must start with a '-'
+   TOO_MANY_ARG, //Too many arguments given
+   NO_ENV, //environment variable does not exist
+   VERSION //version
+};
+vector<string> msg;
+string sysLocale;
+string const LANG_DIR = "./Language Files/";	//language directory
+string const USAGE = "usage";					//usage file name
+string const ABOUT = "about";					//about file name
+string const DEF_ENV = "PORT";					//default environment variable
+regex re("^([a-z]{2})(_[A-Z]{2})?(\\..+)?");
+string const LOC_ENV[] = {						//check environment variables for locale
+	"LANGUAGE",
+	"LC_ALL",
+	"LC_MESSAGE",
+	"LANG"
+};
+//TODO
+//find way to change env variables to test
+
+string getLocale(){
+	for (int i = 0; i < 4; ++i){
+		if(getenv(LOC_ENV[i].c_str()) != NULL && regex_match(getenv(LOC_ENV[i].c_str()), re)){
+			return getenv(LOC_ENV[i].substr(0, 2).c_str());
+		}
+  	}
+	return "en";	//default to english
+}
+
+void version(){
+	cout << msg[VERSION] << "1.2" << endl;
+}
+
+
+//displays text from file to console
+void fromFile(string fileType){
+	ifstream inFile;
+	string inLine;
+	
+	string fileLoc = LANG_DIR + "setport_"+fileType+"_"+ sysLocale +".txt";
+	inFile.open(fileLoc.c_str());
+	if (!(inFile.is_open())){
+		cout << fileType << " not found for locale";
+		fileLoc = LANG_DIR + "setport_"+fileType+"_en.txt";
+		inFile.open(fileLoc.c_str());
+	}
+	while(getline(inFile, inLine)) {							//read all commands from text file and run each one until end of file
+		cout << inLine << endl;
+	}
+}
+
+void getMessages(){
+	ifstream in(LANG_DIR + "setport_msg_"+ sysLocale +".txt");
+	if (!(in.is_open())){return;}
+	string line;
+	while (!in.eof()) {
+		getline(in, line);										//take line from file and send to vector
+		msg.push_back(line);
+	}
+}
+
+//converts char value into it's integer value
+int charToInt(char arg[]){
+    int total = 0;
+    for (int i = 0; arg[i] != NULL; ++i){
+        if (isdigit(arg[i]) && i < 6){							//can't convert non-digit to int, don't want digits higher than 6
+																//for each number in the array, multiply the total by 10 to represent it's location 
+																//subtract 48 from ascii value to cast
+            total = total*10 + (int)arg[i]-48;
+        } 
+        else{return -1;}										//-1 is an error value, can not have port less than 0
+    }
+    return total;
+}
+
+//"changes" port given by user
+int changePort(int port){
+    cout << msg[LISTENING] << port << endl;
+    return 0;
+}
+
+//evaluates port value given by user
+int evaluatePort(char arg[]){									//value must be between 1 and 65355
+    if (charToInt(arg) > 0 && charToInt(arg) <= 65535){return changePort(charToInt(arg));} 
+    cout << msg[INVALID_PORT] << endl;
+    fromFile(USAGE);
+    return 1;
+}
+
+//compares two char arrays and returns bool value
+bool compareArray(char arg[], char flag[]){ 					//check if argument and flag match
+    for (int i = 0; flag[i] != NULL || arg[i] != NULL; ++i){	//continue looping until both arrays reach end of line
+        if (flag[i] != arg[i]){return false;}					//at any point, if arrays don't match return false
+    }
+    return true;												//both arrays are matching at this point
+}
+
+//evaluates argument given by user
+int evaluateArgument(int argc, char* args[]){
+	sysLocale = getLocale();
+	getMessages();
+	if (msg.size() != NUM_MSG){ 								//default to english if file is bad
+		cout << "Message file was missing or incorrect, defaulting to english" << endl;
+		sysLocale = "en";
+		msg.clear();
+		getMessages();
+	}
+	char* flag = args[1];
+	if (argc == 1) {											//display usage screen if there are no parameters
+		fromFile(USAGE);
+		return 0;
+	}
+	//can probably remove
+	if (flag[0] != '-') {										//check first character of second argument
+		cout << msg[ARG_START] << endl;
+		fromFile(USAGE);
+		return 1;
+	}
+	if (compareArray(flag, "-h") || compareArray(flag, "--help") || compareArray(flag, "-?")) {
+		if (argc == 2){
+			fromFile(USAGE);
+			return 0;
+		}
+		cout << msg[TOO_MANY_ARG] << endl;
+		fromFile(USAGE);
+		return 1;
+	}
+	if (compareArray(flag, "-v") || compareArray(flag, "--version")){
+		version();
+		return 0;
+	}
+	if (compareArray(flag, "-!") || compareArray(flag, "--about")){
+		fromFile(ABOUT);
+		return 0;
+	}
+	if (!compareArray(flag, "-p") && !compareArray(flag, "--port")) {
+		cout << msg[INCORRECT_FLAG] << endl;
+		fromFile(USAGE);
+		return 1;
+	}
+	if (argc > 2 && compareArray(args[2], "-e") && argc < 5){					//first argument must be port at this point, check for flag 
+		if (argc == 4){															//	and args are less than maximum allowable parameters
+			if (getenv(args[3]) != NULL){return evaluatePort(getenv(args[3]));}	//send second argument to be evaluated
+			cout << msg[NO_ENV] << endl;				
+			fromFile(USAGE);
+			return 1;
+		}
+		return evaluatePort(getenv(DEF_ENV.c_str()));
+	}
+	if (argc == 3){return evaluatePort(args[2]);}
+	cout << msg[INVALID_PORT] << endl;
+	fromFile(USAGE);
+	return 1;
+}
+
+//program sets port
+int main(int argc, char* args[]){
+    return evaluateArgument(argc, args);
+}
