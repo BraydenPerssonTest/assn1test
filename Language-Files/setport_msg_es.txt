@@ -1,0 +1,7 @@
+Escuchando en el puerto 
+puerto no válido
+Error: parámetro incorrecto
+El primer argumento debe comenzar con un '-'
+Demasiados argumentos dados
+no existe la variable de entorno
+Versión: 

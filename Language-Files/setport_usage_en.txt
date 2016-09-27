@@ -1,0 +1,6 @@
+usage:
+-p <port>, --port <port>    Set specified port, between 1 and 65355
+-p -e <environment variable>Use environment variable
+-h, -?, --help              Display usage screen
+-v, --version               Display version number
+-!, --about                 Display information about the program

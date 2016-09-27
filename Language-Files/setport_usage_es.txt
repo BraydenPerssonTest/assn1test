@@ -1,0 +1,6 @@
+uso:
+-p <puerto>, --port <puerto>Conjunto especificado puerto, entre 1 y 65355
+-p -e <Variable ambiental>  Utilice la variable de entorno
+-h, -?, --help              pantalla de uso de pantalla
+-v, --version               número de versión de pantalla
+-!, --about                 Mostrar información sobre el programa

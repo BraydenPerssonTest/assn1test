@@ -1,0 +1,7 @@
+Listening on port: 
+Invalid port
+Non-valid Flag
+First argument must start with a '-'
+Too many arguments given
+Environment variable does not exist
+Version: 
