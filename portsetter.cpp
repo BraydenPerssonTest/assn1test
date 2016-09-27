@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include <unistd.h>
-//getcwd
 using namespace std;
 int const NUM_MSG = 7;
 vector<string> msg;
@@ -37,7 +36,7 @@ enum {
 void getDirectory(char* args){
 	langDir = args;
 	langDir = regex_replace(langDir, fileName, "/");			//replace end of file location to /
-	langDir += "Language Files/";								//set language
+	langDir += "Language-Files/";								//set language
 }
 
 string getLocale(){
@@ -46,7 +45,7 @@ string getLocale(){
 			return getenv(LOC_ENV[i].substr(0, 2).c_str());
 		}
   	}
-	return "en";	//default to english
+	return "en";												//default to english
 }
 
 void version(){
