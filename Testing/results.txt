@@ -1,0 +1,110 @@
+../setport
+return 0
+
+../setport
+return 0
+
+../setport -h
+return 0
+
+../setport --help
+return 0
+
+../setport -p 4040
+Listening on port 4040
+return 0
+
+../setport --port 4040
+Listening on port 4040
+return 0
+
+../setport -p -e
+Listening on port 8080
+return 1
+
+../setport -p -e PORT
+Listening on port 8080
+return 0
+
+../setport -v
+Version: 1.2
+return 0
+
+../setport --version
+Version: 1.2
+return 0
+
+../setport -?
+return 0
+
+../setport --about
+return 0
+
+../setport -a
+Non-valid flag
+return 1
+
+../setport help
+First argument must start with a '-'
+return 1
+
+../setport -help
+Non-valid flag
+return 1
+
+../setport --h
+Non-valid flag
+return 1
+
+../setport -h --help
+Too many arguments given
+return 1
+
+../setport -hs
+Non-valid flag
+return 1
+
+../setport -p --port 9
+Invalid port
+return 1
+
+../setport -p 77 33
+Invalid port
+return 1
+
+../setport -p -21
+Invalid port
+return 1
+
+../setport -p 0
+Invalid port
+return 1
+
+../setport --port
+Invalid port
+return 1
+
+../setport -p 90642
+Invalid port
+return 1
+
+../setport -x 45321
+Non-valid flag
+return 1
+
+../setport -P 714
+Non-valid flag
+return 1
+
+../setport -p -e hello
+environment variable does not exist
+return 1
+
+../setport -p -e USER
+Invalid port
+return 1
+
+../setport --a
+Non-valid flag
+return 1
+
