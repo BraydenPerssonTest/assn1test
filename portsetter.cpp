@@ -5,9 +5,24 @@
 #include <regex>
 #include <string>
 #include <vector>
-
+#include <unistd.h>
+//getcwd
 using namespace std;
 int const NUM_MSG = 7;
+vector<string> msg;
+string sysLocale;
+string langDir;									//language directory
+string const USAGE = "usage";					//usage file name
+string const ABOUT = "about";					//about file name
+string const DEF_ENV = "PORT";					//default environment variable
+regex re("^([a-z]{2})(_[A-Z]{2})?(\\..+)?");
+regex fileName("/([^/]*)$");
+string const LOC_ENV[] = {						//check environment variables for locale
+	"LANGUAGE",
+	"LC_ALL",
+	"LC_MESSAGE",
+	"LANG"
+};
 enum {
    LISTENING, //Listening on port: 
    INVALID_PORT, //Invalid port
@@ -17,21 +32,13 @@ enum {
    NO_ENV, //environment variable does not exist
    VERSION //version
 };
-vector<string> msg;
-string sysLocale;
-string const LANG_DIR = "./Language Files/";	//language directory
-string const USAGE = "usage";					//usage file name
-string const ABOUT = "about";					//about file name
-string const DEF_ENV = "PORT";					//default environment variable
-regex re("^([a-z]{2})(_[A-Z]{2})?(\\..+)?");
-string const LOC_ENV[] = {						//check environment variables for locale
-	"LANGUAGE",
-	"LC_ALL",
-	"LC_MESSAGE",
-	"LANG"
-};
-//TODO
-//find way to change env variables to test
+
+
+void getDirectory(char* args){
+	langDir = args;
+	langDir = regex_replace(langDir, fileName, "/");			//replace end of file location to /
+	langDir += "Language Files/";								//set language
+}
 
 string getLocale(){
 	for (int i = 0; i < 4; ++i){
@@ -52,11 +59,11 @@ void fromFile(string fileType){
 	ifstream inFile;
 	string inLine;
 	
-	string fileLoc = LANG_DIR + "setport_"+fileType+"_"+ sysLocale +".txt";
+	string fileLoc = langDir + "setport_"+fileType+"_"+ sysLocale +".txt";
 	inFile.open(fileLoc.c_str());
 	if (!(inFile.is_open())){
 		cout << fileType << " not found for locale";
-		fileLoc = LANG_DIR + "setport_"+fileType+"_en.txt";
+		fileLoc = langDir + "setport_"+fileType+"_en.txt";
 		inFile.open(fileLoc.c_str());
 	}
 	while(getline(inFile, inLine)) {							//read all commands from text file and run each one until end of file
@@ -65,7 +72,7 @@ void fromFile(string fileType){
 }
 
 void getMessages(){
-	ifstream in(LANG_DIR + "setport_msg_"+ sysLocale +".txt");
+	ifstream in(langDir + "setport_msg_"+ sysLocale +".txt");
 	if (!(in.is_open())){return;}
 	string line;
 	while (!in.eof()) {
@@ -112,6 +119,7 @@ bool compareArray(char arg[], char flag[]){ 					//check if argument and flag ma
 
 //evaluates argument given by user
 int evaluateArgument(int argc, char* args[]){
+	getDirectory(args[0]);										//get file directory
 	sysLocale = getLocale();
 	getMessages();
 	if (msg.size() != NUM_MSG){ 								//default to english if file is bad
@@ -170,5 +178,6 @@ int evaluateArgument(int argc, char* args[]){
 
 //program sets port
 int main(int argc, char* args[]){
+	//cout << args[0] << endl;
     return evaluateArgument(argc, args);
 }
