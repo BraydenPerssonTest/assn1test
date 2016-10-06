@@ -7,13 +7,13 @@
 #include <vector>
 #include <unistd.h>
 using namespace std;
-int const NUM_MSG = 7;
+
 vector<string> msg;
-string sysLocale;
-string langDir;									//language directory
 string const USAGE = "usage";					//usage file name
 string const ABOUT = "about";					//about file name
 string const DEF_ENV = "PORT";					//default environment variable
+string sysLocale;
+string langDir;									//language directory
 regex re("^([a-z]{2})(_[A-Z]{2})?(\\..+)?");
 regex fileName("/([^/]*)$");
 string const LOC_ENV[] = {						//check environment variables for locale
@@ -23,20 +23,21 @@ string const LOC_ENV[] = {						//check environment variables for locale
 	"LANG"
 };
 enum {
-   LISTENING, //Listening on port: 
-   INVALID_PORT, //Invalid port
-   INCORRECT_FLAG, //Non-valid Flag
-   ARG_START, //First argument must start with a '-'
-   TOO_MANY_ARG, //Too many arguments given
-   NO_ENV, //environment variable does not exist
-   VERSION //version
+   LISTENING,									//Listening on port: 
+   INVALID_PORT,								//Invalid port
+   INCORRECT_FLAG,								//Non-valid Flag
+   ARG_START,									//First argument must start with a '-'
+   TOO_MANY_ARG,								//Too many arguments given
+   NO_ENV,										//environment variable does not exist
+   VERSION,										//version
+   COUNT										//count number of variables
 };
 
 
 void getDirectory(char* args){
 	langDir = args;
 	langDir = regex_replace(langDir, fileName, "/");			//replace end of file location to /
-	langDir += "Language-Files/";								//set language
+	langDir += "Language Files/";								//set language directory
 }
 
 string getLocale(){
@@ -49,23 +50,27 @@ string getLocale(){
 }
 
 void version(){
-	cout << msg[VERSION] << "1.2" << endl;
+	cout << msg[VERSION] << "3.2" << endl;
 }
 
 
 //displays text from file to console
 void fromFile(string fileType){
-	ifstream inFile;
+	ifstream in;
 	string inLine;
 	
 	string fileLoc = langDir + "setport_"+fileType+"_"+ sysLocale +".txt";
-	inFile.open(fileLoc.c_str());
-	if (!(inFile.is_open())){
-		cout << fileType << " not found for locale";
-		fileLoc = langDir + "setport_"+fileType+"_en.txt";
-		inFile.open(fileLoc.c_str());
+	in.open(fileLoc.c_str());
+	if (!(in.is_open())){
+		cout << fileType << " not found for locale, defaulting to english" << endl;
+		fileLoc = langDir + "setport_"+fileType+"_en.txt";		//default to english
+		in.open(fileLoc.c_str());
+		if (!(in.is_open())){									//error out of english file is missing
+			cout << "English file not found or incorrect for "+fileType << endl;
+			return;
+		}
 	}
-	while(getline(inFile, inLine)) {							//read all commands from text file and run each one until end of file
+	while(getline(in, inLine)) {								//read all commands from text file and run each one until end of file
 		cout << inLine << endl;
 	}
 }
@@ -121,18 +126,22 @@ int evaluateArgument(int argc, char* args[]){
 	getDirectory(args[0]);										//get file directory
 	sysLocale = getLocale();
 	getMessages();
-	if (msg.size() != NUM_MSG){ 								//default to english if file is bad
+	if (msg.size() != COUNT){ 									//default to english if file is bad
 		cout << "Message file was missing or incorrect, defaulting to english" << endl;
 		sysLocale = "en";
 		msg.clear();
 		getMessages();
+		if (msg.size() != COUNT){								//exit program if english file is not found
+			cout << "English files not found or incorrect" << endl;
+			return 1;
+		}
 	}
 	char* flag = args[1];
 	if (argc == 1) {											//display usage screen if there are no parameters
 		fromFile(USAGE);
 		return 0;
 	}
-	//can probably remove
+	//can probably remove, kept for more clarity on error
 	if (flag[0] != '-') {										//check first character of second argument
 		cout << msg[ARG_START] << endl;
 		fromFile(USAGE);
