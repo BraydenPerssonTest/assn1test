@@ -37,7 +37,7 @@ enum {
 void getDirectory(char* args){
 	langDir = args;
 	langDir = regex_replace(langDir, fileName, "/");			//replace end of file location to /
-	langDir += "Language Files/";								//set language directory
+	langDir += "Language-Files/";								//set language directory
 }
 
 string getLocale(){
