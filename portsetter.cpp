@@ -88,7 +88,8 @@ void getMessages(){
 //converts char value into it's integer value
 int charToInt(char arg[]){
     int total = 0;
-    for (int i = 0; arg[i] != NULL; ++i){
+    int length = strlen(arg);
+    for (int i = 0; i < length; ++i){
         if (isdigit(arg[i]) && i < 6){							//can't convert non-digit to int, don't want digits higher than 6
 																//for each number in the array, multiply the total by 10 to represent it's location 
 																//subtract 48 from ascii value to cast
@@ -114,11 +115,10 @@ int evaluatePort(char arg[]){									//value must be between 1 and 65355
 }
 
 //compares two char arrays and returns bool value
-bool compareArray(char arg[], char flag[]){ 					//check if argument and flag match
-    for (int i = 0; flag[i] != NULL || arg[i] != NULL; ++i){	//continue looping until both arrays reach end of line
-        if (flag[i] != arg[i]){return false;}					//at any point, if arrays don't match return false
-    }
-    return true;												//both arrays are matching at this point
+bool compareArray(char arg[], string flag){ 					//check if argument and flag match
+	const char *cflag = flag.c_str();
+	if (strcmp(arg, cflag) == 0) return true;
+    return false;											
 }
 
 //evaluates argument given by user
